@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "TypePeek",
+  "version": "1.0.1",
+  "description": "鼠标悬停查看网页字体信息",
+  "permissions": ["activeTab"],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_end",
+      "all_frames": true
+    }
+  ]
+}
