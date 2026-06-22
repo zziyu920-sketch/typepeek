@@ -118,10 +118,108 @@
       font-size: 10px;
       color: #71717a;
     }
+    .typepeek-floating-bar {
+      position: fixed;
+      z-index: 2147483646;
+      right: 16px;
+      bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      background: rgba(24, 24, 27, 0.92);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 100px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.04);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      pointer-events: auto;
+      color: #fafafa;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      font-size: 12px;
+      line-height: 1;
+      opacity: 0;
+      transform: translateY(12px) scale(0.96);
+      transition: opacity 0.22s ease, transform 0.22s ease, background 0.15s ease;
+    }
+    .typepeek-floating-bar.typepeek-bar-visible {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    .typepeek-floating-bar.typepeek-disabled {
+      background: rgba(60, 60, 67, 0.75);
+    }
+    .typepeek-bar-logo {
+      width: 18px;
+      height: 18px;
+      border-radius: 5px;
+      flex-shrink: 0;
+    }
+    .typepeek-bar-status {
+      font-weight: 500;
+      color: #fafafa;
+      min-width: 58px;
+    }
+    .typepeek-bar-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 50%;
+      color: #fafafa;
+      cursor: pointer;
+      transition: background 0.15s ease, transform 0.15s ease;
+    }
+    .typepeek-bar-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+    .typepeek-bar-btn:active {
+      transform: scale(0.92);
+    }
+    .typepeek-bar-btn svg {
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+    }
+    .typepeek-bar-btn.typepeek-off svg {
+      color: #a1a1a6;
+    }
+    .typepeek-bar-btn.typepeek-off:hover {
+      color: #fafafa;
+    }
+    .typepeek-toast {
+      position: fixed;
+      z-index: 2147483647;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%) scale(0.96);
+      padding: 12px 20px;
+      background: rgba(24, 24, 27, 0.96);
+      color: #fafafa;
+      border-radius: 100px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+    .typepeek-toast.typepeek-toast-visible {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
   `;
 
   let hostRoot = null;
   let tooltip = null;
+  let floatingBar = null;
+  let toggleBtn = null;
+  let toast = null;
   let currentTarget = null;
   let lastX = 0;
   let lastY = 0;
@@ -151,6 +249,80 @@
     shadow.appendChild(tooltip);
 
     return tooltip;
+  }
+
+  function createFloatingBar() {
+    if (floatingBar) return floatingBar;
+
+    const shadow = hostRoot ? hostRoot.shadowRoot : getOrCreateTooltip().getRootNode();
+
+    floatingBar = document.createElement('div');
+    floatingBar.className = 'typepeek-floating-bar';
+    floatingBar.innerHTML = `
+      <img class="typepeek-bar-logo" src="${chrome.runtime.getURL('assets/icon32.png')}" alt="">
+      <span class="typepeek-bar-status">TypePeek On</span>
+      <button type="button" class="typepeek-bar-btn" id="typepeek-toggle-btn" title="Toggle TypePeek" aria-label="Toggle TypePeek">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
+          <line x1="12" y1="2" x2="12" y2="12"></line>
+        </svg>
+      </button>
+    `;
+
+    toggleBtn = floatingBar.querySelector('#typepeek-toggle-btn');
+
+    toggleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleEnabled();
+    });
+
+    shadow.appendChild(floatingBar);
+
+    toast = document.createElement('div');
+    toast.className = 'typepeek-toast';
+    toast.textContent = 'TypePeek Off';
+    shadow.appendChild(toast);
+
+    updateFloatingBar();
+
+    requestAnimationFrame(() => {
+      floatingBar.classList.add('typepeek-bar-visible');
+    });
+
+    return floatingBar;
+  }
+
+  function updateFloatingBar() {
+    if (!floatingBar) return;
+    const statusText = floatingBar.querySelector('.typepeek-bar-status');
+    if (enabled) {
+      floatingBar.classList.remove('typepeek-disabled');
+      toggleBtn.classList.remove('typepeek-off');
+      statusText.textContent = 'TypePeek On';
+    } else {
+      floatingBar.classList.add('typepeek-disabled');
+      toggleBtn.classList.add('typepeek-off');
+      statusText.textContent = 'TypePeek Off';
+    }
+  }
+
+  function toggleEnabled() {
+    enabled = !enabled;
+    updateFloatingBar();
+    showToggleToast(enabled ? 'TypePeek On' : 'TypePeek Off');
+    if (!enabled) {
+      hideTooltip();
+      currentTarget = null;
+    }
+  }
+
+  function showToggleToast(message) {
+    if (!toast) return;
+    toast.textContent = message;
+    toast.classList.add('typepeek-toast-visible');
+    setTimeout(() => {
+      toast.classList.remove('typepeek-toast-visible');
+    }, 1200);
   }
 
   function parseFontNames(fontFamily) {
@@ -378,11 +550,7 @@
   document.addEventListener('keydown', (e) => {
     if (e.altKey && (e.key === 'p' || e.key === 'P')) {
       e.preventDefault();
-      enabled = !enabled;
-      if (!enabled) {
-        hideTooltip();
-        currentTarget = null;
-      }
+      toggleEnabled();
     }
     if (e.key === 'Escape') {
       hideTooltip();
@@ -405,4 +573,11 @@
     }
   });
   observer.observe(document.body, { childList: true, subtree: true });
+
+  // Initialize the floating control bar once the DOM is ready.
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', createFloatingBar);
+  } else {
+    createFloatingBar();
+  }
 })();

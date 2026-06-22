@@ -22,6 +22,7 @@ TypePeek 把这件事变得像 hover 取色一样简单——**鼠标划过文�
 - 智能卡片位置：根据屏幕边缘自动调整，避免被截断
 - 支持 iframe 内文字检测
 - `Option + P`（Mac）/ `Alt + P`（Windows）快速开关
+- 页面右下角悬浮开关栏，随时点击开启/暂停检测
 - `ESC` 隐藏卡片
 
 ---
@@ -39,9 +40,8 @@ TypePeek 把这件事变得像 hover 取色一样简单——**鼠标划过文�
 ## 使用方式
 
 - 安装后打开任意网页
-- 将鼠标移动到任意文字上
-- 等待约 100ms，信息卡片即会出现
-- 按 `Option + P` 可暂停/恢复检测
+- 将鼠标移动到任意文字上，等待约 100ms，信息卡片即会出现
+- 点击页面右下角悬浮栏的电源图标，或按 `Option + P`，可暂停/恢复检测
 
 ---
 
@@ -49,7 +49,8 @@ TypePeek 把这件事变得像 hover 取色一样简单——**鼠标划过文�
 
 - **Manifest V3**：使用最新 Chrome 扩展标准
 - **Content Script 注入**：在任意网页上运行检测逻辑
-- **Shadow DOM 隔离**：tooltip 样式完全独立于宿主网页，避免 CSS 污染
+- **Shadow DOM 隔离**：tooltip、悬浮控制栏样式完全独立于宿主网页，避免 CSS 污染
+- **右下角悬浮开关栏**：固定右下角的小胶囊，一键开关检测，不依赖快捷键
 - **精确文本定位**：优先使用 `caretRangeFromPoint` / `caretPositionFromPoint` 获取鼠标下的具体文字节点
 - **实际字体解析**：通过 `document.fonts.check()` 判断字体是否真正加载，避免被 fallback 字体误导
 - **边界处理**：监听滚动、resize、DOM 变化，保证卡片位置正确且不会残留
@@ -61,9 +62,9 @@ TypePeek 把这件事变得像 hover 取色一样简单——**鼠标划过文�
 ```
 typepeek/
 ├── manifest.json      # 插件配置
-├── content.js         # 核心检测与 tooltip 逻辑
+├── content.js         # 核心检测、tooltip 与悬浮开关栏逻辑
 ├── README.md
-└── assets/            # 截图与演示素材
+└── assets/            # 图标、截图与演示素材
 ```
 
 ---
