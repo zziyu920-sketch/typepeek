@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TypePeek</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="tp-app">
+    <header class="tp-header">
+      <div class="tp-brand">
+        <img src="assets/icon32.png" alt="" class="tp-logo">
+        <div>
+          <h1 class="tp-title">TypePeek</h1>
+          <p class="tp-subtitle">Typography research</p>
+        </div>
+      </div>
+      <span class="tp-count" id="record-count">0 records</span>
+    </header>
+
+    <div class="tp-toolbar">
+      <input type="search" id="search-input" class="tp-search" placeholder="Search fonts, sites, tags...">
+      <select id="group-filter" class="tp-select">
+        <option value="">All groups</option>
+      </select>
+    </div>
+
+    <main class="tp-list" id="record-list" aria-live="polite"></main>
+
+    <div class="tp-empty" id="empty-state">
+      <div class="tp-empty-icon">Ag</div>
+      <p class="tp-empty-title">No saved records yet</p>
+      <p class="tp-empty-hint">Hover over text on any page and click the Save button in the tooltip.</p>
+    </div>
+
+    <footer class="tp-footer">
+      <button type="button" class="tp-text-btn" id="export-all-btn">Export all JSON</button>
+      <button type="button" class="tp-text-btn tp-danger" id="clear-all-btn">Clear all</button>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

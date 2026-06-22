@@ -1,9 +1,25 @@
 {
   "manifest_version": 3,
   "name": "TypePeek",
-  "version": "1.0.1",
-  "description": "鼠标悬停查看网页字体信息",
-  "permissions": ["activeTab"],
+  "version": "1.1.0",
+  "description": "鼠标悬停查看并收藏网页字体信息，导出排版研究卡片",
+  "permissions": ["activeTab", "storage"],
+  "icons": {
+    "16": "assets/icon16.png",
+    "32": "assets/icon32.png",
+    "48": "assets/icon48.png",
+    "128": "assets/icon128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "assets/icon16.png",
+      "32": "assets/icon32.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
