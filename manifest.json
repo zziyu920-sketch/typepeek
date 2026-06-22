@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "TypePeek",
   "version": "1.1.0",
-  "description": "鼠标悬停查看并收藏网页字体信息，导出排版研究卡片",
+  "description": "Hover to inspect, save, and export font information from any web text",
   "permissions": ["activeTab", "storage"],
   "icons": {
     "16": "assets/icon16.png",

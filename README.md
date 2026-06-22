@@ -1,120 +1,121 @@
 # TypePeek
 
-一个轻量级 Chrome 浏览器插件，帮助设计师在浏览网页时**一键查看、收藏并导出任意文字的字体信息**。
+A lightweight Chrome extension that lets designers **inspect, save, and export font information** from any text on the web.
 
-> 鼠标悬停查看字体，一键收藏生成排版研究卡片，直接用于作品集或 case study。
-
----
-
-## 为什么做这个项目
-
-作为视觉传达与用户体验设计背景的学生，我经常在做竞品分析时想知道某个网站用了什么字体、字号和行高。传统做法需要打开开发者工具一层层查看，很打断浏览节奏。
-
-TypePeek 把这件事变得像 hover 取色一样简单——**鼠标划过文字，信息立刻呈现**；遇到喜欢的排版，还可以收藏、备注并导出成研究卡片。
+> Hover to see the font. Click to save a typography study card for your portfolio or case study.
 
 ---
 
-## 功能
+## Why I Built This
 
-### A 版本（查看）
-- 鼠标悬停任意网页文字，即时显示字体信息卡片
-- 显示内容：字体名、字号（Size）、字重（Weight）、行高（Line Height）、颜色（Color）、字间距（Letter Spacing）
-- 字体预览框使用 `Ag` 展示当前字体特征
-- 智能卡片位置：根据屏幕边缘自动调整，避免被截断
-- 支持 iframe 内文字检测
-- `Option + P`（Mac）/ `Alt + P`（Windows）快速开关
-- `ESC` 隐藏卡片
+As a visual communication and UX design student, I often do competitive analysis and want to know what font, size, and line height a website is using. Opening DevTools and digging through layers breaks the browsing flow.
 
-### B 版本（研究工具）
-- 在 tooltip 上点击 **Save** 收藏当前字体样本
-- 使用 `chrome.storage.local` 本地持久化存储所有记录
-- 点击工具栏图标打开 **Popup 管理面板**，查看、搜索、分组所有收藏
-- 为每条记录添加研究备注（Note）、标签（Tags）和分组（Group）
-- 编辑或删除已有记录
-- 导出 800×500 像素的 **排版研究卡片 PNG**，包含字体参数、来源、备注和标签
-- 一键导出所有记录的 JSON 备份
-- **右下角悬浮控制栏**：随时开关检测（电源图标）、查看收藏数量并快速打开收藏夹（书签图标），不依赖快捷键
+TypePeek makes it as simple as a color-picker hover — **move the cursor over text and the specs appear instantly**.
 
 ---
 
-## 安装方式
+## Features
 
-1. 下载或克隆本项目到本地
-2. 打开 Chrome，访问 `chrome://extensions/`
-3. 右上角开启**开发者模式**
-4. 点击**加载已解压的扩展程序**
-5. 选择本项目文件夹 `typepeek/`
+### Version A (Inspect)
+- Hover over any text on the web to see a font-info card
+- Shows: font family, size, weight, line height, color, and letter spacing
+- `Ag` preview glyph rendered in the detected font
+- Smart card positioning that avoids screen edges
+- Works inside iframes
+- Toggle on/off with `Option + P` (Mac) / `Alt + P` (Windows)
+- Hide the card with `ESC`
 
----
-
-## 使用方式
-
-- 安装后打开任意网页
-- 将鼠标移动到任意文字上，等待约 100ms，信息卡片即会出现
-- 点击卡片右上角的 **Save** 按钮收藏当前字体样本
-- 点击浏览器工具栏的 TypePeek 图标，或点击页面右下角悬浮栏的书签图标，打开管理面板
-- 在面板中搜索、分组、编辑备注，或导出 PNG 研究卡片
-- 点击右下角悬浮栏的电源图标，或按 `Option + P`，可暂停/恢复检测
-- 按 `ESC` 隐藏卡片
-
----
-
-## 技术亮点
-
-- **Manifest V3**：使用最新 Chrome 扩展标准
-- **Content Script 注入**：在任意网页上运行检测逻辑
-- **Shadow DOM 隔离**：tooltip、悬浮控制栏样式完全独立于宿主网页，避免 CSS 污染
-- **分层交互设计**：tooltip 保持 `pointer-events: none` 不遮挡页面，控制层独立承载可点击收藏按钮
-- **右下角悬浮控制栏**：固定右下角的小胶囊，集成开关与收藏夹入口，半透明且可交互
-- **精确文本定位**：优先使用 `caretRangeFromPoint` / `caretPositionFromPoint` 获取鼠标下的具体文字节点
-- **实际字体解析**：通过 `document.fonts.check()` 判断字体是否真正加载，避免被 fallback 字体误导
-- **本地持久化**：使用 `chrome.storage.local` 保存收藏记录，跨页面/跨会话可用
-- **Canvas 导出**：零依赖绘制排版研究卡片 PNG，适合直接放入作品集
-- **边界处理**：监听滚动、resize、DOM 变化，保证卡片位置正确且不会残留
+### Version B (Research Tool)
+- Click **Save** on the tooltip to bookmark a typography sample
+- Persisted locally with `chrome.storage.local`
+- Open the **popup dashboard** from the toolbar or floating bar to manage saves
+- Add research notes, tags, and groups to each record
+- Edit or delete saved records
+- Export an 800×500 **typography study card PNG** with specs, source, notes, and tags
+- Export all records as JSON for backup
+- **Floating control bar** in the bottom-right corner: power toggle, saved-count badge, and quick access to the collection
 
 ---
 
-## 项目结构
+## Install
+
+1. Download or clone this repo
+2. Open Chrome and go to `chrome://extensions/`
+3. Turn on **Developer mode** in the top-right corner
+4. Click **Load unpacked**
+5. Select the `typepeek/` folder
+
+---
+
+## Usage
+
+- Install the extension and open any webpage
+- Move the mouse over any text; the card appears after ~100ms
+- Click the **Save** button in the top-right of the tooltip to bookmark the sample
+- Open the TypePeek popup from the toolbar or the floating bar’s bookmark icon
+- Search, group, edit notes, or export PNG study cards from the popup
+- Click the power icon in the floating bar or press `Option + P` to pause/resume detection
+- Press `ESC` to hide the card
+
+---
+
+## Technical Highlights
+
+- **Manifest V3** with a minimal service worker for storage migration
+- **Content script** injection on all URLs and iframes
+- **Shadow DOM isolation** keeps tooltip and floating bar styles separate from host pages
+- **Layered interaction design**: tooltip is `pointer-events: none`, while a sibling controls layer handles clickable buttons
+- **Floating control bar** fixed to the bottom-right, translucent and interactive
+- **Precise text detection** using `caretRangeFromPoint` / `caretPositionFromPoint`
+- **Real font resolution** via `document.fonts.check()` to avoid fallback-font confusion
+- **Local persistence** with `chrome.storage.local`, surviving page reloads and browser restarts
+- **Canvas-based PNG export** with zero dependencies, ready to drop into a portfolio
+- **Edge-case handling** for scroll, resize, and DOM mutations
+
+---
+
+## Project Structure
 
 ```
 typepeek/
-├── manifest.json      # 插件配置
-├── background.js      # Service worker：安装/升级迁移、存储消息中转
-├── content.js         # 核心检测、tooltip 与收藏按钮逻辑
-├── popup.html         # 管理面板界面
-├── popup.css          # 管理面板样式
-├── popup.js           # 管理面板逻辑：CRUD、搜索、PNG 导出
-├── test-page.html     # 本地测试页面
+├── manifest.json      # Extension manifest
+├── background.js      # Service worker: install/update migration, message relay
+├── content.js         # Core detection, tooltip, save button, floating bar
+├── popup.html         # Dashboard UI
+├── popup.css          # Dashboard styles
+├── popup.js           # Dashboard logic: CRUD, search, PNG export
+├── test-page.html     # Local test page
 ├── README.md
-└── assets/            # 图标、截图与演示素材
+└── assets/            # Icons, screenshots, demo media
 ```
 
 ---
 
-## 进阶规划（已完成 B 版本）
+## Roadmap
 
-A 版本解决的是“查看”问题，B 版本已升级为“研究工具”：
+Version A solved “inspection”; Version B turns TypePeek into a “research tool”:
 
-- ✅ 收藏感兴趣的字体记录
-- ✅ 为每条记录添加研究备注、标签与分组
-- ✅ 在弹出面板中管理所有收藏
-- ✅ 导出成带注释的“排版研究卡片”图片，直接用于作品集或 case study
-- ✅ 一键导出 JSON 备份
+- ✅ Save font records
+- ✅ Add notes, tags, and groups
+- ✅ Manage saves in a popup dashboard
+- ✅ Export annotated typography study cards
+- ✅ JSON backup export
+- ✅ Floating control bar with power toggle and collection access
 
-未来可继续探索的方向：
+Future ideas:
 
-- 收藏记录的云同步（`chrome.storage.sync`）
-- 批量导出多张卡片为 ZIP
-- 字体配对建议与对比视图
-- 深色/浅色主题切换
+- Cloud sync via `chrome.storage.sync`
+- Bulk export of multiple cards as ZIP
+- Font pairing suggestions and comparison view
+- Dark/light theme toggle
 
 ---
 
-## 演示
+## Demo
 
-![TypePeek 演示](assets/demo.gif)
+![TypePeek demo](assets/demo.gif)
 
-![TypePeek 截图](assets/screenshot.png)
+![TypePeek screenshot](assets/screenshot.png)
 
 ---
 
