@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "TypePeek",
   "version": "1.0.2",
-  "description": "鼠标悬停查看网页字体信息",
+  "description": "Hover to inspect font information from any web text",
   "permissions": ["activeTab"],
   "icons": {
     "16": "assets/icon16.png",

@@ -1,90 +1,91 @@
 # TypePeek
 
-一个轻量级 Chrome 浏览器插件，帮助设计师在浏览网页时**一键查看任意文字的字体信息**。
+A lightweight Chrome extension that lets designers **inspect font information** from any text on the web.
 
-> 鼠标悬停，即可看到字体名、字号、字重、行高与颜色。
-
----
-
-## 为什么做这个项目
-
-作为视觉传达与用户体验设计背景的学生，我经常在做竞品分析时想知道某个网站用了什么字体、字号和行高。传统做法需要打开开发者工具一层层查看，很打断浏览节奏。
-
-TypePeek 把这件事变得像 hover 取色一样简单——**鼠标划过文字，信息立刻呈现**。
+> Hover to see the font family, size, weight, line height, and color.
 
 ---
 
-## 功能
+## Why I Built This
 
-- 鼠标悬停任意网页文字，即时显示字体信息卡片
-- 显示内容：字体名、字号（Size）、字重（Weight）、行高（Line Height）、颜色（Color）、字间距（Letter Spacing）
-- 字体预览框使用 `Ag` 展示当前字体特征
-- 智能卡片位置：根据屏幕边缘自动调整，避免被截断
-- 支持 iframe 内文字检测
-- `Option + P`（Mac）/ `Alt + P`（Windows）快速开关
-- 页面右下角悬浮开关栏，随时点击开启/暂停检测
-- `ESC` 隐藏卡片
+As a visual communication and UX design student, I often do competitive analysis and want to know what font, size, and line height a website is using. Opening DevTools and digging through layers breaks the browsing flow.
+
+TypePeek makes it as simple as a color-picker hover — **move the cursor over text and the specs appear instantly**.
 
 ---
 
-## 安装方式
+## Features
 
-1. 下载或克隆本项目到本地
-2. 打开 Chrome，访问 `chrome://extensions/`
-3. 右上角开启**开发者模式**
-4. 点击**加载已解压的扩展程序**
-5. 选择本项目文件夹 `typepeek/`
-
----
-
-## 使用方式
-
-- 安装后打开任意网页
-- 将鼠标移动到任意文字上，等待约 100ms，信息卡片即会出现
-- 点击页面右下角悬浮栏的电源图标，或按 `Option + P`，可暂停/恢复检测
+- Hover over any text on the web to see a font-info card
+- Shows: font family, size, weight, line height, color, and letter spacing
+- `Ag` preview glyph rendered in the detected font
+- Smart card positioning that avoids screen edges
+- Works inside iframes
+- Toggle on/off with `Option + P` (Mac) / `Alt + P` (Windows)
+- Floating power toggle in the bottom-right corner
+- Hide the card with `ESC`
 
 ---
 
-## 技术亮点
+## Install
 
-- **Manifest V3**：使用最新 Chrome 扩展标准
-- **Content Script 注入**：在任意网页上运行检测逻辑
-- **Shadow DOM 隔离**：tooltip、悬浮控制栏样式完全独立于宿主网页，避免 CSS 污染
-- **右下角悬浮开关栏**：固定右下角的小胶囊，一键开关检测，不依赖快捷键
-- **精确文本定位**：优先使用 `caretRangeFromPoint` / `caretPositionFromPoint` 获取鼠标下的具体文字节点
-- **实际字体解析**：通过 `document.fonts.check()` 判断字体是否真正加载，避免被 fallback 字体误导
-- **边界处理**：监听滚动、resize、DOM 变化，保证卡片位置正确且不会残留
+1. Download or clone this repo
+2. Open Chrome and go to `chrome://extensions/`
+3. Turn on **Developer mode** in the top-right corner
+4. Click **Load unpacked**
+5. Select the `typepeek/` folder
 
 ---
 
-## 项目结构
+## Usage
+
+- Install the extension and open any webpage
+- Move the mouse over any text; the card appears after ~100ms
+- Click the power icon in the floating bar or press `Option + P` to pause/resume detection
+- Press `ESC` to hide the card
+
+---
+
+## Technical Highlights
+
+- **Manifest V3** with the latest Chrome extension standards
+- **Content script** injection on all URLs and iframes
+- **Shadow DOM isolation** keeps tooltip and floating bar styles separate from host pages
+- **Floating control bar** fixed to the bottom-right, one-click toggle without memorizing shortcuts
+- **Precise text detection** using `caretRangeFromPoint` / `caretPositionFromPoint`
+- **Real font resolution** via `document.fonts.check()` to avoid fallback-font confusion
+- **Edge-case handling** for scroll, resize, and DOM mutations
+
+---
+
+## Project Structure
 
 ```
 typepeek/
-├── manifest.json      # 插件配置
-├── content.js         # 核心检测、tooltip 与悬浮开关栏逻辑
+├── manifest.json      # Extension manifest
+├── content.js         # Core detection, tooltip, and floating toggle bar
 ├── README.md
-└── assets/            # 图标、截图与演示素材
+└── assets/            # Icons, screenshots, demo media
 ```
 
 ---
 
-## 进阶规划（B 版本）
+## Roadmap
 
-A 版本解决的是“查看”问题，B 版本将升级为“研究工具”：
+Version A solves "inspection"; Version B will upgrade TypePeek into a "research tool":
 
-- 收藏感兴趣的字体记录
-- 为每条记录添加研究备注
-- 在弹出面板中管理所有收藏
-- 导出成带注释的“排版研究卡片”图片，直接用于作品集或 case study
+- Save interesting font records
+- Add research notes to each record
+- Manage saves in a popup dashboard
+- Export annotated typography study cards for portfolios or case studies
 
 ---
 
-## 演示
+## Demo
 
-![TypePeek 演示](assets/demo.gif)
+![TypePeek demo](assets/demo.gif)
 
-![TypePeek 截图](assets/screenshot.png)
+![TypePeek screenshot](assets/screenshot.png)
 
 ---
 
