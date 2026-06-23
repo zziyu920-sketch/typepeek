@@ -294,6 +294,9 @@
   let enabled = true;
   let savedCount = 0;
 
+  const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform || '');
+  const shortcutKey = isMac ? 'Option + P' : 'Alt + P';
+
   function getOrCreateTooltip() {
     if (tooltip) return tooltip;
 
@@ -433,15 +436,13 @@
   }
 
   function openCollection() {
-    try {
-      if (chrome.action && chrome.action.openPopup) {
-        chrome.action.openPopup();
-        return;
-      }
-    } catch (e) {
-      // Fallback below
+    if (chrome.action && chrome.action.openPopup) {
+      chrome.action.openPopup().catch(() => {
+        chrome.runtime.sendMessage({ action: 'openPopup' });
+      });
+      return;
     }
-    window.open(chrome.runtime.getURL('popup.html'), '_blank', 'noopener,noreferrer');
+    chrome.runtime.sendMessage({ action: 'openPopup' });
   }
 
   function loadSavedCount() {
@@ -705,7 +706,7 @@
         </div>
         ${style.letterSpacing !== 'normal' ? `<div class="typepeek-cell">
           <span class="typepeek-label">Tracking ${style.letterSpacing}</span>
-        </div>` : '<span class="typepeek-shortcut">Alt + P</span>'}
+        </div>` : '<span class="typepeek-shortcut">' + shortcutKey + '</span>'}
       </div>
     `;
 

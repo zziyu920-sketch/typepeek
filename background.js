@@ -80,5 +80,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 
+  if (message.action === 'openPopup') {
+    chrome.action.openPopup().catch(() => {
+      chrome.windows.create({
+        url: chrome.runtime.getURL('popup.html'),
+        type: 'popup',
+        width: 420,
+        height: 620
+      });
+    });
+    return false;
+  }
+
   return false;
 });

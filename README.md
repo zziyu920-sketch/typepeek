@@ -2,6 +2,10 @@
 
 A lightweight Chrome extension that lets designers **inspect, save, and export font information** from any text on the web.
 
+[![Version](https://img.shields.io/badge/version-1.1.0-blue)](https://github.com/zziyu920-sketch/typepeek/releases)
+[![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
+[![Manifest](https://img.shields.io/badge/manifest-v3-orange)](./manifest.json)
+
 > Hover to see the font. Click to save a typography study card for your portfolio or case study.
 
 ---
@@ -116,6 +120,21 @@ Future ideas:
 ![TypePeek demo](assets/demo.gif)
 
 ![TypePeek screenshot](assets/screenshot.png)
+
+---
+
+## Testing
+
+```bash
+# Install test dependencies
+python3 -m pip install playwright
+python3 -m playwright install chromium
+
+# Run E2E tests (requires Google Chrome)
+python3 tests/e2e/test_flows.py
+```
+
+A local `test-page.html` is also included for manual smoke testing.
 
 ---
 
