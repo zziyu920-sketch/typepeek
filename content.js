@@ -188,6 +188,20 @@
       opacity: 1;
       transform: translateY(0) scale(1);
     }
+    .typepeek-floating-bar.typepeek-bar-dragging {
+      transition: opacity 0.22s ease, background 0.15s ease;
+      cursor: grabbing;
+    }
+    .typepeek-bar-drag-handle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: grab;
+      user-select: none;
+    }
+    .typepeek-bar-drag-handle:active {
+      cursor: grabbing;
+    }
     .typepeek-floating-bar.typepeek-disabled {
       background: rgba(60, 60, 67, 0.75);
     }
@@ -294,6 +308,10 @@
   let enabled = true;
   let savedCount = 0;
 
+  // Drag state
+  let barPos = { right: 16, bottom: 16 };
+  let dragInfo = null;
+
   const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform || '');
   const shortcutKey = isMac ? 'Option + P' : 'Alt + P';
 
@@ -353,8 +371,10 @@
     floatingBar = document.createElement('div');
     floatingBar.className = 'typepeek-floating-bar';
     floatingBar.innerHTML = `
-      <img class="typepeek-bar-logo" src="${chrome.runtime.getURL('assets/icon32.png')}" alt="">
-      <span class="typepeek-bar-status">TypePeek On</span>
+      <div class="typepeek-bar-drag-handle">
+        <img class="typepeek-bar-logo" src="${chrome.runtime.getURL('assets/icon32.png')}" alt="">
+        <span class="typepeek-bar-status">TypePeek On</span>
+      </div>
       <button type="button" class="typepeek-bar-btn" id="typepeek-toggle-btn" title="Toggle TypePeek" aria-label="Toggle TypePeek">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
@@ -383,6 +403,11 @@
       openCollection();
     });
 
+    // Drag to reposition
+    const dragHandle = floatingBar.querySelector('.typepeek-bar-drag-handle');
+    dragHandle.addEventListener('mousedown', onDragStart);
+    dragHandle.addEventListener('touchstart', onDragStart, { passive: false });
+
     shadow.appendChild(floatingBar);
 
     // Create toast element
@@ -393,6 +418,7 @@
 
     updateFloatingBar();
     loadSavedCount();
+    loadBarPosition();
 
     // Show with slight delay for entrance animation
     requestAnimationFrame(() => {
@@ -400,6 +426,97 @@
     });
 
     return floatingBar;
+  }
+
+  // ── Drag handlers ──
+
+  function onDragStart(e) {
+    if (!floatingBar) return;
+    e.preventDefault();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    const rect = floatingBar.getBoundingClientRect();
+    dragInfo = {
+      startX: clientX,
+      startY: clientY,
+      startRight: window.innerWidth - rect.right,
+      startBottom: window.innerHeight - rect.bottom
+    };
+    floatingBar.classList.add('typepeek-bar-dragging');
+    document.addEventListener('mousemove', onDragMove);
+    document.addEventListener('mouseup', onDragEnd);
+    document.addEventListener('touchmove', onDragMove, { passive: false });
+    document.addEventListener('touchend', onDragEnd);
+  }
+
+  function onDragMove(e) {
+    if (!dragInfo || !floatingBar) return;
+    e.preventDefault();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    const dx = dragInfo.startX - clientX;
+    const dy = dragInfo.startY - clientY;
+    barPos.right = Math.max(0, Math.min(dragInfo.startRight + dx, window.innerWidth - 100));
+    barPos.bottom = Math.max(0, Math.min(dragInfo.startBottom + dy, window.innerHeight - 40));
+    floatingBar.style.right = barPos.right + 'px';
+    floatingBar.style.bottom = barPos.bottom + 'px';
+  }
+
+  function onDragEnd(e) {
+    if (!dragInfo) return;
+    document.removeEventListener('mousemove', onDragMove);
+    document.removeEventListener('mouseup', onDragEnd);
+    document.removeEventListener('touchmove', onDragMove);
+    document.removeEventListener('touchend', onDragEnd);
+    floatingBar.classList.remove('typepeek-bar-dragging');
+    snapToCorner();
+    applyBarPosition();
+    saveBarPosition();
+    dragInfo = null;
+  }
+
+  function snapToCorner() {
+    const cx = barPos.right;
+    const cy = barPos.bottom;
+    const hw = window.innerWidth / 2;
+    const hh = window.innerHeight / 2;
+    if (cx < hw && cy < hh) {
+      barPos = { right: null, bottom: null, left: 16, top: 16 };
+    } else if (cx >= hw && cy < hh) {
+      barPos = { right: 16, bottom: null, left: null, top: 16 };
+    } else if (cx < hw && cy >= hh) {
+      barPos = { right: null, bottom: 16, left: 16, top: null };
+    } else {
+      barPos = { right: 16, bottom: 16, left: null, top: null };
+    }
+  }
+
+  function applyBarPosition() {
+    if (!floatingBar) return;
+    floatingBar.style.right = barPos.right != null ? barPos.right + 'px' : 'auto';
+    floatingBar.style.bottom = barPos.bottom != null ? barPos.bottom + 'px' : 'auto';
+    floatingBar.style.left = barPos.left != null ? barPos.left + 'px' : 'auto';
+    floatingBar.style.top = barPos.top != null ? barPos.top + 'px' : 'auto';
+  }
+
+  function loadBarPosition() {
+    if (typeof chrome === 'undefined' || !chrome.storage) return;
+    chrome.storage.local.get(['typepeek_settings'], (result) => {
+      const settings = result.typepeek_settings || {};
+      if (settings.barPos) {
+        barPos = settings.barPos;
+        applyBarPosition();
+      }
+    });
+  }
+
+  function saveBarPosition() {
+    if (typeof chrome === 'undefined' || !chrome.storage) return;
+    chrome.storage.local.get(['typepeek_settings'], (result) => {
+      const settings = result.typepeek_settings || {};
+      settings.barPos = { ...barPos };
+      chrome.storage.local.set({ typepeek_settings: settings });
+    });
   }
 
   function updateFloatingBar() {
