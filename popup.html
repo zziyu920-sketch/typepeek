@@ -26,6 +26,14 @@
       </select>
     </div>
 
+    <div class="tp-selection-bar" id="selection-bar" hidden>
+      <label class="tp-checkbox-label">
+        <input type="checkbox" id="select-all-checkbox">
+        <span id="selection-count">0 selected</span>
+      </label>
+      <button type="button" class="tp-btn tp-btn-primary tp-btn-sm" id="export-zip-btn">Export ZIP</button>
+    </div>
+
     <main class="tp-list" id="record-list" aria-live="polite"></main>
 
     <div class="tp-empty" id="empty-state">
@@ -49,6 +57,7 @@
     </footer>
   </div>
 
+  <script src="vendor/jszip.min.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

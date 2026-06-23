@@ -12,11 +12,16 @@
     exportAll: document.getElementById('export-all-btn'),
     clearAll: document.getElementById('clear-all-btn'),
     syncToggle: document.getElementById('sync-toggle'),
-    syncStatus: document.getElementById('sync-status')
+    syncStatus: document.getElementById('sync-status'),
+    selectAll: document.getElementById('select-all-checkbox'),
+    selectionBar: document.getElementById('selection-bar'),
+    selectionCount: document.getElementById('selection-count'),
+    exportZip: document.getElementById('export-zip-btn')
   };
 
   let records = [];
   let editingId = null;
+  let selectedIds = new Set();
 
   function init() {
     loadRecords(() => {
@@ -34,6 +39,18 @@
     });
 
     loadSyncStatus();
+
+    els.selectAll.addEventListener('change', () => {
+      const filtered = getFilteredRecords();
+      if (els.selectAll.checked) {
+        filtered.forEach((r) => selectedIds.add(r.id));
+      } else {
+        filtered.forEach((r) => selectedIds.delete(r.id));
+      }
+      render();
+    });
+
+    els.exportZip.addEventListener('click', exportSelectedAsZip);
 
     chrome.runtime.onMessage.addListener((message) => {
       if (message.action === 'recordSaved' || message.action === 'recordsSynced') {
@@ -98,8 +115,11 @@
     if (filtered.length === 0) {
       els.list.style.display = 'none';
       els.empty.classList.add('is-visible');
+      els.selectionBar.hidden = true;
       return;
     }
+
+    updateSelectionBar(filtered);
 
     els.list.style.display = 'flex';
     els.empty.classList.remove('is-visible');
@@ -111,10 +131,27 @@
 
   function renderRecordCard(record) {
     const card = document.createElement('article');
-    card.className = 'tp-card';
+    const isSelected = selectedIds.has(record.id);
+    card.className = 'tp-card' + (isSelected ? ' tp-card-selected' : '');
     card.dataset.id = record.id;
 
     const isEditing = editingId === record.id;
+
+    // Selection checkbox
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.className = 'tp-card-checkbox';
+    checkbox.checked = isSelected;
+    checkbox.addEventListener('change', (e) => {
+      e.stopPropagation();
+      if (checkbox.checked) {
+        selectedIds.add(record.id);
+      } else {
+        selectedIds.delete(record.id);
+      }
+      render();
+    });
+    card.appendChild(checkbox);
 
     card.innerHTML = `
       <div class="tp-card-header">
@@ -474,6 +511,147 @@
     const limitKb = (state.limit / 1024).toFixed(0);
     els.syncStatus.textContent = `Synced (${kb}/${limitKb}KB)`;
     els.syncStatus.style.color = 'var(--tp-success)';
+  }
+
+  function updateSelectionBar(filtered) {
+    const count = filtered.filter((r) => selectedIds.has(r.id)).length;
+    els.selectionBar.hidden = false;
+    els.selectionCount.textContent = count + ' selected';
+    els.selectAll.checked = count === filtered.length && filtered.length > 0;
+  }
+
+  async function exportSelectedAsZip() {
+    const selected = records.filter((r) => selectedIds.has(r.id));
+    if (selected.length === 0) return;
+
+    const zip = new JSZip();
+    const folder = zip.folder('typepeek-export');
+
+    for (let i = 0; i < selected.length; i++) {
+      const record = selected[i];
+      const canvas = await renderRecordToCanvas(record);
+      if (canvas) {
+        const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+        const safeName = record.primaryFont.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+        folder.file(safeName + '-' + record.id + '.png', blob);
+      }
+    }
+
+    folder.file('records.json', JSON.stringify(selected, null, 2));
+
+    const zipBlob = await zip.generateAsync({ type: 'blob' });
+    const url = URL.createObjectURL(zipBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'typepeek-export-' + new Date().toISOString().slice(0, 10) + '.zip';
+    a.click();
+    URL.revokeObjectURL(url);
+
+    selectedIds.clear();
+    render();
+  }
+
+  function renderRecordToCanvas(record) {
+    return new Promise((resolve) => {
+      const width = 800;
+      const height = 500;
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+
+      // Background
+      ctx.fillStyle = '#18181b';
+      ctx.beginPath();
+      const r = 20;
+      ctx.moveTo(r, 0);
+      ctx.lineTo(width - r, 0);
+      ctx.quadraticCurveTo(width, 0, width, r);
+      ctx.lineTo(width, height - r);
+      ctx.quadraticCurveTo(width, height, width - r, height);
+      ctx.lineTo(r, height);
+      ctx.quadraticCurveTo(0, height, 0, height - r);
+      ctx.lineTo(0, r);
+      ctx.quadraticCurveTo(0, 0, r, 0);
+      ctx.closePath();
+      ctx.fill();
+
+      // Header
+      ctx.fillStyle = '#71717a';
+      ctx.font = '600 12px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('TYPEPEEK STUDY CARD', 48, 48);
+
+      // Font preview
+      ctx.fillStyle = '#fafafa';
+      ctx.font = '72px ' + (record.fontFamilyCss || 'sans-serif');
+      ctx.fillText('Ag', 48, 140);
+
+      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(48, 180);
+      ctx.lineTo(width - 48, 180);
+      ctx.stroke();
+
+      const metrics = [
+        ['FONT', record.primaryFont],
+        ['SIZE', record.fontSize],
+        ['WEIGHT', record.fontWeight],
+        ['LEADING', record.lineHeight],
+        ['COLOR', record.color],
+        ['TRACKING', record.letterSpacing !== 'normal' ? record.letterSpacing : 'normal']
+      ];
+
+      let y = 220;
+      ctx.font = '500 12px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      metrics.forEach(([label, value]) => {
+        ctx.fillStyle = '#71717a';
+        ctx.fillText(label, 48, y);
+        ctx.fillStyle = '#fafafa';
+        ctx.font = '500 16px ' + (record.fontFamilyCss || 'sans-serif');
+        ctx.fillText(value, 180, y);
+        ctx.font = '500 12px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        y += 36;
+      });
+
+      // Color swatch
+      ctx.fillStyle = record.colorRaw || record.color;
+      ctx.beginPath();
+      ctx.arc(700, 220, 14, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+      ctx.beginPath();
+      ctx.moveTo(48, 330);
+      ctx.lineTo(width - 48, 330);
+      ctx.stroke();
+
+      y = 360;
+      ctx.fillStyle = '#a1a1a6';
+      ctx.font = '500 13px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      ctx.fillText('Found on: ' + (record.domain || 'unknown'), 48, y);
+
+      if (record.note) {
+        y += 28;
+        ctx.fillText('Note: ' + record.note, 48, y);
+      }
+
+      if (record.tags && record.tags.length) {
+        y += 28;
+        ctx.fillText('Tags: ' + record.tags.join(', '), 48, y);
+      }
+
+      y += 28;
+      ctx.fillStyle = '#71717a';
+      ctx.font = '500 12px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      ctx.fillText('Saved: ' + formatDate(record.createdAt), 48, y);
+
+      resolve(canvas);
+    });
   }
 
   function formatDate(ts) {
