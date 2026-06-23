@@ -343,10 +343,74 @@ body {
 .tp-footer {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   padding: 10px 16px;
   border-top: 1px solid var(--tp-border);
   flex-shrink: 0;
   background: rgba(0, 0, 0, 0.15);
+}
+
+.tp-footer-left {
+  display: flex;
+  gap: 4px;
+}
+
+.tp-sync {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tp-sync-label {
+  font-size: 10px;
+  color: var(--tp-text-muted);
+  white-space: nowrap;
+}
+
+/* Toggle switch */
+.tp-toggle {
+  position: relative;
+  display: inline-flex;
+  cursor: pointer;
+}
+
+.tp-toggle input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.tp-toggle-track {
+  width: 32px;
+  height: 18px;
+  background: var(--tp-surface);
+  border: 1px solid var(--tp-border);
+  border-radius: 9px;
+  transition: background 0.2s ease, border-color 0.2s ease;
+  position: relative;
+}
+
+.tp-toggle-track::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  background: var(--tp-text-muted);
+  border-radius: 50%;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.tp-toggle input:checked + .tp-toggle-track {
+  background: var(--tp-accent);
+  border-color: var(--tp-accent);
+}
+
+.tp-toggle input:checked + .tp-toggle-track::after {
+  transform: translateX(14px);
+  background: #fff;
 }
 
 .tp-text-btn {

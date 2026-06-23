@@ -10,7 +10,9 @@
     search: document.getElementById('search-input'),
     groupFilter: document.getElementById('group-filter'),
     exportAll: document.getElementById('export-all-btn'),
-    clearAll: document.getElementById('clear-all-btn')
+    clearAll: document.getElementById('clear-all-btn'),
+    syncToggle: document.getElementById('sync-toggle'),
+    syncStatus: document.getElementById('sync-status')
   };
 
   let records = [];
@@ -27,8 +29,14 @@
     els.exportAll.addEventListener('click', exportAllJSON);
     els.clearAll.addEventListener('click', clearAllRecords);
 
+    els.syncToggle.addEventListener('change', () => {
+      toggleSync(els.syncToggle.checked);
+    });
+
+    loadSyncStatus();
+
     chrome.runtime.onMessage.addListener((message) => {
-      if (message.action === 'recordSaved') {
+      if (message.action === 'recordSaved' || message.action === 'recordsSynced') {
         loadRecords(() => render());
       }
     });
@@ -436,6 +444,36 @@
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#039;');
+  }
+
+  function loadSyncStatus() {
+    chrome.runtime.sendMessage({ action: 'getSyncStatus' }, (response) => {
+      if (chrome.runtime.lastError || !response) return;
+      els.syncToggle.checked = response.enabled === true;
+      updateSyncLabel(response);
+    });
+  }
+
+  function toggleSync(enabled) {
+    chrome.runtime.sendMessage({ action: 'toggleSync', enabled }, (response) => {
+      if (chrome.runtime.lastError || !response) {
+        els.syncToggle.checked = !enabled;
+        return;
+      }
+      updateSyncLabel(response);
+    });
+  }
+
+  function updateSyncLabel(state) {
+    if (!state || !state.enabled) {
+      els.syncStatus.textContent = 'Sync off';
+      els.syncStatus.style.color = '';
+      return;
+    }
+    const kb = state.bytesUsed ? (state.bytesUsed / 1024).toFixed(1) : '0.0';
+    const limitKb = (state.limit / 1024).toFixed(0);
+    els.syncStatus.textContent = `Synced (${kb}/${limitKb}KB)`;
+    els.syncStatus.style.color = 'var(--tp-success)';
   }
 
   function formatDate(ts) {

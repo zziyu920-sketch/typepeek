@@ -2,8 +2,11 @@ const CURRENT_VERSION = '1.1.0';
 const STORAGE_KEYS = {
   records: 'typepeek_records',
   settings: 'typepeek_settings',
-  version: 'typepeek_version'
+  version: 'typepeek_version',
+  sync: 'typepeek_sync'
 };
+
+const SYNC_LIMIT = 102400; // chrome.storage.sync max bytes (100KB)
 
 chrome.runtime.onInstalled.addListener((details) => {
   if (details.reason === 'install') {
@@ -92,5 +95,114 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return false;
   }
 
+  if (message.action === 'getSyncStatus') {
+    chrome.storage.sync.get([STORAGE_KEYS.sync], (result) => {
+      const syncState = result[STORAGE_KEYS.sync] || { enabled: false };
+      chrome.storage.sync.getBytesInUse(null, (bytesUsed) => {
+        sendResponse({ ...syncState, bytesUsed, limit: SYNC_LIMIT });
+      });
+    });
+    return true;
+  }
+
+  if (message.action === 'toggleSync') {
+    const enabled = !!message.enabled;
+    const syncState = { enabled, lastSynced: enabled ? Date.now() : null };
+    chrome.storage.sync.set({ [STORAGE_KEYS.sync]: syncState }, () => {
+      if (enabled) {
+        syncRecordsToSyncStorage(() => sendResponse({ ok: true, ...syncState }));
+      } else {
+        chrome.storage.sync.remove('typepeek_sync_records', () => {
+          sendResponse({ ok: true, ...syncState });
+        });
+      }
+    });
+    return true;
+  }
+
+  if (message.action === 'syncNow') {
+    syncRecordsToSyncStorage((success) => {
+      const syncState = { enabled: true, lastSynced: success ? Date.now() : null };
+      chrome.storage.sync.set({ [STORAGE_KEYS.sync]: syncState }, () => {
+        sendResponse({ ok: success, ...syncState });
+      });
+    });
+    return true;
+  }
+
   return false;
+});
+
+// ── Sync helpers ──
+
+function syncRecordsToSyncStorage(callback) {
+  chrome.storage.local.get([STORAGE_KEYS.records], (result) => {
+    const records = result[STORAGE_KEYS.records] || [];
+    // Strip large fields for sync efficiency
+    const slim = records.map((r) => ({
+      id: r.id,
+      createdAt: r.createdAt,
+      updatedAt: r.updatedAt,
+      primaryFont: r.primaryFont,
+      fallbackFonts: r.fallbackFonts,
+      fontSize: r.fontSize,
+      fontWeight: r.fontWeight,
+      lineHeight: r.lineHeight,
+      color: r.color,
+      colorRaw: r.colorRaw,
+      letterSpacing: r.letterSpacing,
+      fontFamilyCss: r.fontFamilyCss,
+      domain: r.domain,
+      pageTitle: r.pageTitle,
+      elementTag: r.elementTag,
+      sampleText: r.sampleText,
+      note: r.note,
+      tags: r.tags,
+      group: r.group
+    }));
+    const payload = JSON.stringify(slim);
+    if (payload.length > SYNC_LIMIT * 0.95) {
+      // Trim oldest records until under limit
+      while (slim.length > 1 && JSON.stringify(slim).length > SYNC_LIMIT * 0.95) {
+        slim.pop();
+      }
+    }
+    chrome.storage.sync.set({ typepeek_sync_records: slim }, () => {
+      if (callback) callback(true);
+    });
+  });
+}
+
+// Pull changes from other synced devices
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area !== 'sync') return;
+  if (!changes.typepeek_sync_records || !changes.typepeek_sync_records.newValue) return;
+
+  // Check if sync is enabled locally
+  chrome.storage.sync.get([STORAGE_KEYS.sync], (result) => {
+    const syncState = result[STORAGE_KEYS.sync];
+    if (!syncState || !syncState.enabled) return;
+
+    const remoteRecords = changes.typepeek_sync_records.newValue;
+    chrome.storage.local.get([STORAGE_KEYS.records], (localResult) => {
+      const localRecords = localResult[STORAGE_KEYS.records] || [];
+      const localMap = new Map(localRecords.map((r) => [r.id, r]));
+      let merged = false;
+
+      remoteRecords.forEach((rr) => {
+        const existing = localMap.get(rr.id);
+        if (!existing || rr.updatedAt > existing.updatedAt) {
+          localMap.set(rr.id, { ...rr, url: rr.url || '', _synced: true });
+          merged = true;
+        }
+      });
+
+      if (merged) {
+        const mergedRecords = Array.from(localMap.values()).sort((a, b) => b.createdAt - a.createdAt);
+        chrome.storage.local.set({ [STORAGE_KEYS.records]: mergedRecords }, () => {
+          chrome.runtime.sendMessage({ action: 'recordsSynced' }).catch(() => {});
+        });
+      }
+    });
+  });
 });

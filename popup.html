@@ -35,8 +35,17 @@
     </div>
 
     <footer class="tp-footer">
-      <button type="button" class="tp-text-btn" id="export-all-btn">Export all JSON</button>
-      <button type="button" class="tp-text-btn tp-danger" id="clear-all-btn">Clear all</button>
+      <div class="tp-footer-left">
+        <button type="button" class="tp-text-btn" id="export-all-btn">Export all JSON</button>
+        <button type="button" class="tp-text-btn tp-danger" id="clear-all-btn">Clear all</button>
+      </div>
+      <div class="tp-sync" id="sync-section">
+        <span class="tp-sync-label" id="sync-status">Sync off</span>
+        <label class="tp-toggle" title="Enable cloud sync">
+          <input type="checkbox" id="sync-toggle">
+          <span class="tp-toggle-track"></span>
+        </label>
+      </div>
     </footer>
   </div>
 
