@@ -32,6 +32,9 @@ function migrate(fromVersion, toVersion) {
 
 // Keep service worker alive for runtime message relay between content scripts and popup.
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  // Only accept messages from this extension's own contexts.
+  if (!sender.id || sender.id !== chrome.runtime.id) return false;
+
   if (message.action === 'ping') {
     sendResponse({ ok: true });
     return false;
