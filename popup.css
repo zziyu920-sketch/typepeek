@@ -628,6 +628,38 @@ body {
 }
 
 
+/* ── Export toast ── */
+.tp-export-toast {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  margin: 0 16px;
+  background: var(--tp-surface);
+  border: 1px solid var(--tp-border);
+  border-radius: var(--tp-radius-sm);
+  color: var(--tp-text-secondary);
+  font-size: 12px;
+}
+
+.tp-export-toast[hidden] {
+  display: none;
+}
+
+.tp-export-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--tp-border);
+  border-top-color: var(--tp-accent);
+  border-radius: 50%;
+  animation: tp-spin 0.6s linear infinite;
+}
+
+@keyframes tp-spin {
+  to { transform: rotate(360deg); }
+}
+
 /* ── Comparison Modal ── */
 .tp-compare-overlay {
   position: fixed;

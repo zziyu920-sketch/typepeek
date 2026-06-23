@@ -1,0 +1,282 @@
+.typepeek-tooltip {
+  position: fixed;
+  z-index: 2147483647;
+  width: 240px;
+  padding: 16px;
+  background: rgba(24, 24, 27, 0.96);
+  color: #fafafa;
+  border-radius: 14px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.4;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(6px) scale(0.98);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.typepeek-tooltip.typepeek-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+.typepeek-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.typepeek-preview {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  font-size: 26px;
+  line-height: 1;
+  color: #fff;
+}
+.typepeek-name-wrap {
+  min-width: 0;
+  flex: 1;
+}
+.typepeek-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  word-break: break-word;
+  line-height: 1.3;
+}
+.typepeek-fallback {
+  font-size: 11px;
+  color: #a1a1a6;
+  margin-top: 3px;
+  word-break: break-word;
+}
+.typepeek-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.typepeek-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.typepeek-cell.typepeek-cell-wide {
+  grid-column: span 2;
+}
+.typepeek-label {
+  color: #a1a1a6;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.typepeek-value {
+  color: #ffffff;
+  font-weight: 500;
+  font-size: 13px;
+}
+.typepeek-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.typepeek-color {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.typepeek-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+}
+.typepeek-shortcut {
+  font-size: 10px;
+  color: #71717a;
+}
+.typepeek-controls {
+  position: fixed;
+  z-index: 2147483647;
+  pointer-events: auto;
+}
+.typepeek-save-btn {
+  position: absolute;
+  top: -36px;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(24, 24, 27, 0.96);
+  color: #fafafa;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  cursor: pointer;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+.typepeek-save-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+.typepeek-save-btn:active {
+  transform: scale(0.96);
+}
+.typepeek-save-btn.typepeek-saved {
+  color: #34d399;
+  border-color: rgba(52, 211, 153, 0.25);
+}
+.typepeek-save-btn svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+.typepeek-floating-bar {
+  position: fixed;
+  z-index: 2147483646;
+  right: 16px;
+  bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: rgba(24, 24, 27, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 100px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  pointer-events: auto;
+  color: #fafafa;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-size: 12px;
+  line-height: 1;
+  opacity: 0;
+  transform: translateY(12px) scale(0.96);
+  transition: opacity 0.22s ease, transform 0.22s ease, background 0.15s ease;
+}
+.typepeek-floating-bar.typepeek-bar-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+.typepeek-floating-bar.typepeek-bar-dragging {
+  transition: opacity 0.22s ease, background 0.15s ease;
+  cursor: grabbing;
+}
+.typepeek-bar-drag-handle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: grab;
+  user-select: none;
+}
+.typepeek-bar-drag-handle:active {
+  cursor: grabbing;
+}
+.typepeek-floating-bar.typepeek-disabled {
+  background: rgba(60, 60, 67, 0.75);
+}
+.typepeek-bar-logo {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  flex-shrink: 0;
+}
+.typepeek-bar-status {
+  font-weight: 500;
+  color: #fafafa;
+  min-width: 58px;
+}
+.typepeek-bar-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
+  color: #fafafa;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+  position: relative;
+}
+.typepeek-bar-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+.typepeek-bar-btn:active {
+  transform: scale(0.92);
+}
+.typepeek-bar-btn svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+.typepeek-bar-btn.typepeek-off svg {
+  color: #a1a1a6;
+}
+.typepeek-bar-btn.typepeek-off:hover {
+  color: #fafafa;
+}
+.typepeek-bar-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 4px;
+  background: #3b82f6;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 600;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+.typepeek-bar-badge.typepeek-badge-hidden {
+  display: none;
+}
+.typepeek-toast {
+  position: fixed;
+  z-index: 2147483647;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) scale(0.96);
+  padding: 12px 20px;
+  background: rgba(24, 24, 27, 0.96);
+  color: #fafafa;
+  border-radius: 100px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.typepeek-toast.typepeek-toast-visible {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}

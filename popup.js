@@ -23,7 +23,9 @@
     compareBtn: document.getElementById('compare-btn'),
     compareOverlay: document.getElementById('compare-overlay'),
     compareClose: document.getElementById('compare-close'),
-    compareBody: document.getElementById('compare-body')
+    compareBody: document.getElementById('compare-body'),
+    exportToast: document.getElementById('export-toast'),
+    exportToastText: document.getElementById('export-toast-text')
   };
 
   let records = [];
@@ -207,7 +209,7 @@
         </div>
         <div class="tp-metric">
           <span class="tp-metric-label">Weight</span>
-          <span class="tp-metric-value">${escapeHtml(record.fontWeight)}</span>
+          <span class="tp-metric-value">${escapeHtml(weightName(record.fontWeight))}</span>
         </div>
         <div class="tp-metric">
           <span class="tp-metric-label">Leading</span>
@@ -370,7 +372,7 @@
     const metrics = [
       ['FONT', record.primaryFont],
       ['SIZE', record.fontSize],
-      ['WEIGHT', record.fontWeight],
+      ['WEIGHT', weightName(record.fontWeight)],
       ['LEADING', record.lineHeight],
       ['COLOR', record.color],
       ['TRACKING', record.letterSpacing !== 'normal' ? record.letterSpacing : 'normal']
@@ -460,6 +462,14 @@
     ctx.closePath();
   }
 
+  function weightName(val) {
+    if (!val) return '';
+    const map = { '100': 'Thin', '200': 'Extra Light', '300': 'Light', '400': 'Regular', '500': 'Medium', '600': 'Semi Bold', '700': 'Bold', '800': 'Extra Bold', '900': 'Black' };
+    const num = parseInt(val, 10);
+    const name = map[String(num)];
+    return name ? name + ' (' + val + ')' : String(val);
+  }
+
   function wrapText(ctx, text, maxWidth, font) {
     ctx.font = font;
     const words = text.split(' ');
@@ -541,11 +551,15 @@
     const selected = records.filter((r) => selectedIds.has(r.id));
     if (selected.length === 0) return;
 
+    els.exportToast.hidden = false;
+    els.exportToastText.textContent = 'Exporting 0 / ' + selected.length + '...';
+
     const zip = new JSZip();
     const folder = zip.folder('typepeek-export');
 
     for (let i = 0; i < selected.length; i++) {
       const record = selected[i];
+      els.exportToastText.textContent = 'Exporting ' + (i + 1) + ' / ' + selected.length + '...';
       const canvas = await renderRecordToCanvas(record);
       if (canvas) {
         const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
@@ -553,6 +567,8 @@
         folder.file(safeName + '-' + record.id + '.png', blob);
       }
     }
+
+    els.exportToastText.textContent = 'Zipping...';
 
     folder.file('records.json', JSON.stringify(selected, null, 2));
 
@@ -564,6 +580,7 @@
     a.click();
     URL.revokeObjectURL(url);
 
+    els.exportToast.hidden = true;
     selectedIds.clear();
     render();
   }
@@ -614,7 +631,7 @@
       const metrics = [
         ['FONT', record.primaryFont],
         ['SIZE', record.fontSize],
-        ['WEIGHT', record.fontWeight],
+        ['WEIGHT', weightName(record.fontWeight)],
         ['LEADING', record.lineHeight],
         ['COLOR', record.color],
         ['TRACKING', record.letterSpacing !== 'normal' ? record.letterSpacing : 'normal']
@@ -691,7 +708,7 @@
     const metrics = [
       { label: 'Font', value: record.primaryFont, key: 'primaryFont' },
       { label: 'Size', value: record.fontSize, key: 'fontSize' },
-      { label: 'Weight', value: record.fontWeight, key: 'fontWeight' },
+      { label: 'Weight', value: weightName(record.fontWeight), key: 'fontWeight' },
       { label: 'Leading', value: record.lineHeight, key: 'lineHeight' },
       { label: 'Color', value: record.color, key: 'color' },
       { label: 'Tracking', value: record.letterSpacing !== 'normal' ? record.letterSpacing : 'normal', key: 'letterSpacing' }
