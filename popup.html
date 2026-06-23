@@ -32,6 +32,7 @@
         <span id="selection-count">0 selected</span>
       </label>
       <button type="button" class="tp-btn tp-btn-primary tp-btn-sm" id="export-zip-btn">Export ZIP</button>
+      <button type="button" class="tp-btn tp-btn-secondary tp-btn-sm" id="compare-btn" hidden>Compare</button>
     </div>
 
     <main class="tp-list" id="record-list" aria-live="polite"></main>
@@ -55,6 +56,20 @@
         </label>
       </div>
     </footer>
+  </div>
+
+  <div class="tp-compare-overlay" id="compare-overlay" hidden>
+    <div class="tp-compare-modal">
+      <div class="tp-compare-header">
+        <h2>Font Comparison</h2>
+        <button type="button" class="tp-icon-btn tp-compare-close" id="compare-close" aria-label="Close">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="tp-compare-body" id="compare-body"></div>
+    </div>
   </div>
 
   <script src="vendor/jszip.min.js"></script>

@@ -16,7 +16,11 @@
     selectAll: document.getElementById('select-all-checkbox'),
     selectionBar: document.getElementById('selection-bar'),
     selectionCount: document.getElementById('selection-count'),
-    exportZip: document.getElementById('export-zip-btn')
+    exportZip: document.getElementById('export-zip-btn'),
+    compareBtn: document.getElementById('compare-btn'),
+    compareOverlay: document.getElementById('compare-overlay'),
+    compareClose: document.getElementById('compare-close'),
+    compareBody: document.getElementById('compare-body')
   };
 
   let records = [];
@@ -40,6 +44,10 @@
 
     loadSyncStatus();
 
+    els.compareOverlay.addEventListener('click', (e) => {
+      if (e.target === els.compareOverlay) closeCompare();
+    });
+
     els.selectAll.addEventListener('change', () => {
       const filtered = getFilteredRecords();
       if (els.selectAll.checked) {
@@ -51,6 +59,8 @@
     });
 
     els.exportZip.addEventListener('click', exportSelectedAsZip);
+    els.compareBtn.addEventListener('click', openCompare);
+    els.compareClose.addEventListener('click', closeCompare);
 
     chrome.runtime.onMessage.addListener((message) => {
       if (message.action === 'recordSaved' || message.action === 'recordsSynced') {
@@ -518,6 +528,7 @@
     els.selectionBar.hidden = false;
     els.selectionCount.textContent = count + ' selected';
     els.selectAll.checked = count === filtered.length && filtered.length > 0;
+    els.compareBtn.hidden = count !== 2;
   }
 
   async function exportSelectedAsZip() {
@@ -652,6 +663,61 @@
 
       resolve(canvas);
     });
+  }
+
+  function openCompare() {
+    const selected = records.filter((r) => selectedIds.has(r.id));
+    if (selected.length !== 2) return;
+    els.compareOverlay.hidden = false;
+    els.compareBody.innerHTML = '';
+    els.compareBody.appendChild(buildCompareColumn(selected[0], 'A'));
+    els.compareBody.appendChild(buildCompareColumn(selected[1], 'B'));
+  }
+
+  function closeCompare() {
+    els.compareOverlay.hidden = true;
+  }
+
+  function buildCompareColumn(record, label) {
+    const col = document.createElement('div');
+    col.className = 'tp-compare-col';
+
+    const metrics = [
+      { label: 'Font', value: record.primaryFont, key: 'primaryFont' },
+      { label: 'Size', value: record.fontSize, key: 'fontSize' },
+      { label: 'Weight', value: record.fontWeight, key: 'fontWeight' },
+      { label: 'Leading', value: record.lineHeight, key: 'lineHeight' },
+      { label: 'Color', value: record.color, key: 'color' },
+      { label: 'Tracking', value: record.letterSpacing !== 'normal' ? record.letterSpacing : 'normal', key: 'letterSpacing' }
+    ];
+
+    const otherRecord = records.filter((r) => selectedIds.has(r.id) && r.id !== record.id)[0];
+
+    col.innerHTML = `
+      <div class="tp-compare-preview" style="font-family: ${escapeHtml(record.fontFamilyCss)}">${label}</div>
+      <div>
+        <div class="tp-compare-font-name" style="font-family: ${escapeHtml(record.fontFamilyCss)}">${escapeHtml(record.primaryFont)}</div>
+        ${record.fallbackFonts ? '<div class="tp-compare-fallback">' + escapeHtml(record.fallbackFonts) + '</div>' : ''}
+      </div>
+      <div class="tp-compare-metrics">
+        ${metrics.map((m) => {
+          const otherVal = otherRecord ? otherRecord[m.key] : null;
+          const isDiff = otherRecord && m.value !== otherVal;
+          return '<div class="tp-compare-row">' +
+            '<span class="tp-compare-row-label">' + m.label + '</span>' +
+            '<span class="tp-compare-row-value' + (isDiff ? ' tp-diff' : '') + '">' +
+            (m.key === 'color' ? '<span class="tp-compare-swatch" style="background-color:' + escapeHtml(record.colorRaw || record.color) + '"></span>' : '') +
+            escapeHtml(m.value) + '</span>' +
+          '</div>';
+        }).join('')}
+      </div>
+      <div class="tp-compare-source">
+        ${escapeHtml(record.domain || 'unknown')} · ${escapeHtml(record.elementTag || '')}<br>
+        ${escapeHtml(record.sampleText || '')}
+      </div>
+    `;
+
+    return col;
   }
 
   function formatDate(ts) {
