@@ -13,6 +13,9 @@
     clearAll: document.getElementById('clear-all-btn'),
     syncToggle: document.getElementById('sync-toggle'),
     syncStatus: document.getElementById('sync-status'),
+    themeToggle: document.getElementById('theme-toggle'),
+    themeIconSun: document.getElementById('theme-icon-sun'),
+    themeIconMoon: document.getElementById('theme-icon-moon'),
     selectAll: document.getElementById('select-all-checkbox'),
     selectionBar: document.getElementById('selection-bar'),
     selectionCount: document.getElementById('selection-count'),
@@ -43,6 +46,9 @@
     });
 
     loadSyncStatus();
+
+    loadTheme();
+    els.themeToggle.addEventListener('click', toggleTheme);
 
     els.compareOverlay.addEventListener('click', (e) => {
       if (e.target === els.compareOverlay) closeCompare();
@@ -718,6 +724,38 @@
     `;
 
     return col;
+  }
+
+  function loadTheme() {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    chrome.storage.local.get(['typepeek_settings'], (result) => {
+      const settings = result.typepeek_settings || {};
+      const isLight = settings.theme === 'light' || (!settings.theme && !prefersDark);
+      applyTheme(isLight);
+    });
+  }
+
+  function toggleTheme() {
+    const isLight = document.body.classList.contains('tp-light');
+    const newIsLight = !isLight;
+    applyTheme(newIsLight);
+    chrome.storage.local.get(['typepeek_settings'], (result) => {
+      const settings = result.typepeek_settings || {};
+      settings.theme = newIsLight ? 'light' : 'dark';
+      chrome.storage.local.set({ typepeek_settings: settings });
+    });
+  }
+
+  function applyTheme(isLight) {
+    if (isLight) {
+      document.body.classList.add('tp-light');
+      els.themeIconSun.hidden = false;
+      els.themeIconMoon.hidden = true;
+    } else {
+      document.body.classList.remove('tp-light');
+      els.themeIconSun.hidden = true;
+      els.themeIconMoon.hidden = false;
+    }
   }
 
   function formatDate(ts) {
